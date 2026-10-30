@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>osmnxr-core — street-network graph algorithms in Rust</title>
+<meta name="description" content="A dependency-free Rust crate with the graph math of street networks: Dijkstra, Yen, Pareto and constrained shortest paths, centrality, simplification and point snapping. The compute core of the R package osmnxr." />
+<meta property="og:title" content="osmnxr-core — street-network graph algorithms in Rust" />
+<meta property="og:description" content="Edge lists in, indices out. Routing, Pareto and constrained paths, centrality, simplification and snapping with no dependencies. The core of osmnxr, OSMnx for R." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://strategicprojects.github.io/osmnxr-core/" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A3%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-soft: #121a33;
+    --card: #16203f;
+    --border: #263457;
+    --fg: #e8edf7;
+    --muted: #9fb0d0;
+    --brand: #7c5cff;
+    --brand-2: #29c7ac;
+    --accent: #ffb14e;
+    --code-bg: #0d1428;
+    --shadow: 0 12px 40px rgba(0,0,0,.35);
+    --radius: 16px;
+    --maxw: 1080px;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --grid: #263457;
+    --axis: #34456f;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f8fe;
+      --bg-soft: #eef2fb;
+      --card: #ffffff;
+      --border: #dbe3f4;
+      --fg: #10192e;
+      --muted: #56648a;
+      --code-bg: #0d1428;
+      --shadow: 0 12px 36px rgba(30,45,90,.12);
+      --series-1: #2a78d6;
+      --series-2: #eb6834;
+      --grid: #e6ebf7;
+      --axis: #c3cde6;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--fg);
+    background:
+      radial-gradient(1100px 600px at 12% -8%, rgba(124,92,255,.20), transparent 60%),
+      radial-gradient(900px 500px at 96% 4%, rgba(41,199,172,.16), transparent 55%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brand-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+
+  /* Nav */
+  header.nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.02em; font-size: 1.1rem; }
+  .brand .logo { font-size: 1.35rem; }
+  .nav-links { display: flex; gap: 22px; align-items: center; }
+  .nav-links a { color: var(--muted); font-weight: 600; font-size: .95rem; }
+  .nav-links a:hover { color: var(--fg); text-decoration: none; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: .95rem;
+    border: 1px solid var(--border); color: var(--fg); background: var(--card);
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn.primary { background: linear-gradient(135deg, var(--brand), #5b73ff); color: #fff; border: none; }
+  @media (max-width: 720px) { .nav-links a.hide-sm { display: none; } }
+
+  /* Hero */
+  .hero { padding: 74px 0 40px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--brand-2); background: color-mix(in srgb, var(--brand-2) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--brand-2) 30%, transparent);
+    padding: 6px 12px; border-radius: 999px;
+  }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.05; letter-spacing: -.03em; margin: 18px 0 14px; }
+  h1 .grad { background: linear-gradient(120deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: 1.18rem; color: var(--muted); max-width: 40ch; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 26px; }
+  .badges img { height: 22px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
+
+  /* Terminal card */
+  .term {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .term-bar { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .term-title { margin-left: 8px; color: #7f8bb0; font: 600 .82rem ui-monospace, monospace; }
+  pre { margin: 0; padding: 18px 18px 22px; overflow-x: auto; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .88rem; }
+  pre code { color: #d7e0f5; }
+  .c-prompt { color: #6ee7c8; } .c-flag { color: #ffb14e; } .c-cmd { color: #8ea2ff; } .c-cmt { color: #6b779b; } .c-ok { color: #59d99a; }
+
+  /* Sections */
+  section { padding: 56px 0; }
+  section.alt { background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); letter-spacing: -.02em; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 30px; max-width: 62ch; }
+
+  .grid { display: grid; gap: 18px; }
+  .grid.f3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.f2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 860px) { .grid.f3, .grid.f2 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--brand) 40%, var(--border)); }
+  .card .ic { font-size: 1.5rem; }
+  .card h3 { margin: 12px 0 6px; font-size: 1.1rem; letter-spacing: -.01em; }
+  .card p { margin: 0; color: var(--muted); font-size: .96rem; }
+
+  /* Entity pills */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .pill { font: 600 .82rem ui-monospace, monospace; padding: 6px 11px; border-radius: 999px; background: color-mix(in srgb, var(--brand) 12%, transparent); border: 1px solid color-mix(in srgb, var(--brand) 26%, transparent); color: var(--fg); }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 860px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .step { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+  .step .n { font: 800 .8rem ui-monospace, monospace; color: var(--brand-2); }
+  .step h4 { margin: 6px 0 4px; font-size: 1rem; }
+  .step p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+  /* Install tabs (pure CSS via details) */
+  .panel { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px; }
+  .note { color: var(--muted); font-size: .9rem; margin-top: 10px; }
+
+  table.lic { width: 100%; border-collapse: collapse; font-size: .94rem; }
+  table.lic th, table.lic td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  table.lic th { color: var(--muted); font-weight: 700; }
+  .tag { font: 700 .74rem ui-monospace, monospace; padding: 3px 8px; border-radius: 6px; }
+  .tag.mit { background: rgba(41,199,172,.16); color: var(--brand-2); }
+  .tag.mpl { background: rgba(255,177,78,.18); color: var(--accent); }
+  .tag.gpl { background: rgba(255,95,87,.16); color: #ff8a80; }
+
+  .diagram {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; box-shadow: var(--shadow); overflow-x: auto;
+  }
+  .diagram img { display: block; width: 100%; max-width: 960px; height: auto; margin: 0 auto; }
+
+  .dl {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .dl-lbl { font-weight: 800; letter-spacing: -.01em; margin-right: 6px; }
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 13px; border-radius: 10px; font-weight: 700; font-size: .9rem;
+    color: #fff; background: linear-gradient(135deg, var(--brand), #5b73ff);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .dl-btn:hover { text-decoration: none; transform: translateY(-1px); box-shadow: var(--shadow); }
+  .dl-all { font-weight: 700; font-size: .9rem; color: var(--brand-2); }
+
+  footer { padding: 40px 0 60px; color: var(--muted); border-top: 1px solid var(--border); }
+  .foot-inner { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+  .foot-links { display: flex; gap: 18px; flex-wrap: wrap; }
+
+  /* Chart */
+  .viz { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); }
+  .viz h3 { margin: 0 0 2px; font-size: 1.1rem; letter-spacing: -.01em; }
+  .viz .cap { margin: 0 0 12px; color: var(--muted); font-size: .92rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 6px; font-size: .88rem; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .key { display: inline-block; width: 18px; height: 2px; border-radius: 2px; }
+  .key.k1 { background: var(--series-1); } .key.k2 { background: var(--series-2); }
+  .key.kb { height: 10px; background: color-mix(in srgb, var(--series-2) 22%, transparent); }
+  .plot { position: relative; }
+  .plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .plot text { font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .plot text.end { fill: var(--fg); font-weight: 700; }
+  .tip { position: absolute; pointer-events: none; min-width: 170px; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); box-shadow: var(--shadow); font-size: .85rem; color: var(--muted); opacity: 0; transition: opacity .1s ease; }
+  .tip.on { opacity: 1; }
+  .tip .when { font-weight: 700; color: var(--fg); margin-bottom: 4px; }
+  .tip .row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .tip .row b { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .tip .row span { display: inline-flex; align-items: center; gap: 7px; }
+  details.tbl { margin-top: 12px; color: var(--muted); font-size: .9rem; }
+  details.tbl summary { cursor: pointer; font-weight: 700; }
+  table.data { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 10px; }
+  table.data th, table.data td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data th { color: var(--muted); font-weight: 700; }
+  table.data td { color: var(--fg); }
+  table.cmp { width: 100%; border-collapse: collapse; font-size: .94rem; }
+  table.cmp th, table.cmp td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.cmp th { color: var(--muted); font-weight: 700; }
+  .scroll { overflow-x: auto; }
+  .c-str { color: #ffb14e; } .c-ty { color: #6ee7c8; } .c-kw { color: #c9a5ff; }
+  .lead { max-width: 46ch; }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="logo">🛣️</span> osmnxr-core</div>
+    <nav class="nav-links">
+      <a class="hide-sm" href="#features">Features</a>
+      <a class="hide-sm" href="#algorithms">Algorithms</a>
+      <a class="hide-sm" href="#example">Example</a>
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#install">Install</a>
+      <a class="hide-sm" href="#trust">Checked</a>
+      <a class="hide-sm" href="api/osmnxr_core/">API</a>
+      <a class="btn" href="https://github.com/StrategicProjects/osmnxr-core">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">◆ Rust · street networks</span>
+        <h1>The graph math behind <span class="grad">osmnxr</span>, as a crate.</h1>
+        <p class="lead">Routing, Pareto and constrained shortest paths, centrality, simplification and snapping over plain edge lists. No dependencies, no I/O: you bring the network, it brings the answers back as indices into your own data.</p>
+        <div class="badges">
+          <a href="https://github.com/StrategicProjects/osmnxr-core/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/StrategicProjects/osmnxr-core/actions/workflows/ci.yml/badge.svg"></a>
+          <a href="https://crates.io/crates/osmnxr-core"><img alt="crates.io" src="https://img.shields.io/crates/v/osmnxr-core.svg"></a>
+          <a href="https://docs.rs/osmnxr-core"><img alt="docs.rs" src="https://img.shields.io/docsrs/osmnxr-core"></a>
+          <a href="https://github.com/StrategicProjects/osmnxr-core/blob/main/LICENSE-MIT"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+          <img alt="No dependencies" src="https://img.shields.io/badge/dependencies-none-brightgreen.svg">
+          <img alt="Platforms" src="https://img.shields.io/badge/platforms-linux%20%7C%20macos%20%7C%20windows%20%7C%20wasm-informational.svg">
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#install">Get started →</a>
+          <a class="btn" href="api/osmnxr_core/">API reference</a>
+          <a class="btn" href="https://strategicprojects.github.io/osmnxr/">osmnxr for R</a>
+        </div>
+      </div>
+      <div class="term" aria-hidden="true">
+        <div class="term-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">examples/grid.rs</span></div>
+<pre><code><span class="c-kw">use</span> osmnxr_core::{<span class="c-ty">Graph</span>, routing::*};
+
+<span class="c-cmt">// a 3 x 3 grid, two-way streets, one steep shortcut</span>
+<span class="c-kw">let</span> g = <span class="c-ty">Graph</span>::<span class="c-cmd">from_edges</span>(&amp;from, &amp;to, &amp;length, <span class="c-flag">9</span>);
+<span class="c-kw">let</span> (path, _, cost) = <span class="c-cmd">shortest_path_route</span>(&amp;g, <span class="c-flag">0</span>, <span class="c-flag">8</span>)?;
+<span class="c-kw">let</span> front = <span class="c-cmd">pareto_paths</span>(&amp;from, &amp;to, &amp;length, &amp;penalty,
+    <span class="c-flag">9</span>, <span class="c-flag">0</span>, <span class="c-flag">8</span>, f64::INFINITY, usize::MAX);
+
+<span class="c-ok">shortest by length:</span>  [0, 4, 8]         240 m
+<span class="c-ok">Pareto front</span> (length, penalty):
+  [0, 4, 8]          240 m   penalty 20
+  [0, 4, 7, 8]       320 m   penalty 12
+  [0, 1, 4, 5, 8]    400 m   penalty  4</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="alt">
+    <div class="wrap">
+      <h2>Edge lists in, indices out</h2>
+      <p class="sub">The crate knows nothing about OpenStreetMap, geometry or coordinate systems. That is the point: the host language keeps the data and the meaning, the crate keeps the algorithms.</p>
+      <div class="grid f3">
+        <div class="card"><div class="ic">🧭</div><h3>Exact where it matters</h3><p>The Pareto front of bicriteria paths is computed exactly by Martins' label-setting; with a budget, its first entry is the exact constrained shortest path. The LARAC relaxation returns a feasible route with a proven lower bound for graphs where exact search is slow.</p></div>
+        <div class="card"><div class="ic">🔀</div><h3>Parallel edges respected</h3><p>Every path comes with the indices of the edges actually traversed, so attributes and geometry are recovered exactly, even when two edges join the same nodes. No min-weight twin substituted for the real one.</p></div>
+        <div class="card"><div class="ic">📍</div><h3>Snapping at scale</h3><p>A uniform grid over the polyline segments snaps ten thousand points to the nearest edge in well under a second, with the position along the edge, ready to split it.</p></div>
+        <div class="card"><div class="ic">🦀</div><h3>No dependencies, no unsafe</h3><p>Pure Rust on the standard library. Nothing to audit, nothing to vendor beyond the crate itself, and it compiles to WebAssembly.</p></div>
+        <div class="card"><div class="ic">🧾</div><h3>Deterministic</h3><p>The travelling-salesman heuristic runs its iterated local search on a fixed-seed xorshift generator: the same matrix gives the same tour, and the host's random stream is untouched.</p></div>
+        <div class="card"><div class="ic">🏙️</div><h3>Metro-sized</h3><p>On the Delhi road network (1.0 million nodes, 2.1 million directed edges) a constrained query answers in about 0.7 s and a nine-route Pareto front in about 1.5 s from R, with the Rust solve itself under a second.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="algorithms">
+    <div class="wrap">
+      <h2>Algorithms</h2>
+      <p class="sub">Six modules, each a handful of functions over the same CSR graph.</p>
+      <div class="pills">
+        <span class="pill">Graph::from_edges</span><span class="pill">dijkstra</span><span class="pill">shortest_path_route</span><span class="pill">k_shortest_paths</span><span class="pill">distance_matrix</span><span class="pill">pareto_paths</span><span class="pill">csp_lagrangian</span><span class="pill">tsp_tour</span><span class="pill">csr_edge_order</span><span class="pill">betweenness_centrality</span><span class="pill">closeness_centrality</span><span class="pill">basic_stats</span><span class="pill">bearing</span><span class="pill">orientation_entropy</span><span class="pill">simplify_paths</span><span class="pill">connected_components</span><span class="pill">SegmentIndex</span>
+      </div>
+      <p class="note"><strong>routing</strong>: Dijkstra, shortest paths that report the edges traversed, Yen's k loopless shortest paths, distance matrices, the travelling-salesman heuristic (nearest neighbour, then or-opt / swap / 2-opt descent with full-recompute move evaluation, which keeps every move exact on asymmetric matrices, restarted from double-bridge kicks), the Pareto front and LARAC. <strong>centrality</strong>: Brandes betweenness and closeness with the usual normalisations. <strong>metrics</strong>: basic statistics, initial compass bearings and the Shannon entropy of binned bearings that tells a gridiron from an organic street plan. <strong>simplify</strong>: maximal chains of degree-2 nodes between endpoints, and connected components by union-find. <strong>spatial</strong>: a grid index that snaps points to the nearest polyline.</p>
+    </div>
+  </section>
+
+  <section id="example" class="alt">
+    <div class="wrap">
+      <h2>Length against penalty</h2>
+      <p class="sub">The grid of the example ships with the crate. Three paths from corner to corner are nondominated: the steep shortcut twice, once, or not at all. A budget on the penalty picks one of them exactly; the Lagrangian solver reaches the same answer with three Dijkstra runs and reports how far its bound is from the cost.</p>
+      <div class="card scroll">
+        <table class="cmp">
+          <thead><tr><th>Path</th><th>Length</th><th>Penalty</th><th>Why it is on the front</th></tr></thead>
+          <tbody>
+            <tr><td><code>[0, 4, 8]</code></td><td>240 m</td><td>20</td><td>Shortest: both legs of the shortcut.</td></tr>
+            <tr><td><code>[0, 4, 7, 8]</code></td><td>320 m</td><td>12</td><td>One leg of the shortcut, then the grid.</td></tr>
+            <tr><td><code>[0, 1, 4, 5, 8]</code></td><td>400 m</td><td>4</td><td>Grid only: the cheapest in penalty.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">With <code>budget = 5</code>, <code>pareto_paths</code> returns the third row alone, and <code>csp_lagrangian</code> returns a 400 m grid path with a lower bound of 390: feasible, and within 10 m of the proven optimum. <code>cargo run --example grid</code>.</p>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="sub">One graph, built once from your edge lists; every answer points back into them.</p>
+      <div class="diagram"><img src="assets/how-it-works.svg" alt="Edge lists of node indices go into a CSR graph; the algorithms run on it; the results come back as indices into the caller's own edges and nodes." loading="lazy" /></div>
+      <div class="steps" style="margin-top:18px">
+        <div class="step"><div class="n">01</div><h4>Number the nodes</h4><p>Map your ids to 0..n. Keep the map; the crate never sees the ids.</p></div>
+        <div class="step"><div class="n">02</div><h4>List the edges</h4><p>Parallel <code>from</code>, <code>to</code> and weight vectors. Two-way streets are two edges.</p></div>
+        <div class="step"><div class="n">03</div><h4>Build and query</h4><p><code>Graph::from_edges</code>, then any of the routing or centrality functions.</p></div>
+        <div class="step"><div class="n">04</div><h4>Index back</h4><p>Paths are node indices, edges are input positions. Geometry and attributes follow.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install" class="alt">
+    <div class="wrap">
+      <h2>Install &amp; run</h2>
+      <p class="sub">Add the crate and build a graph. Rust 1.81 or later; changes between versions in the <a href="https://github.com/StrategicProjects/osmnxr-core/blob/main/CHANGELOG.md">changelog</a>.</p>
+      <div class="panel" style="margin-bottom:18px">
+<pre><code><span class="c-prompt">$</span> <span class="c-cmd">cargo</span> add osmnxr-core</code></pre>
+      </div>
+      <div class="grid f2">
+        <div>
+          <div class="panel">
+<pre><code><span class="c-cmt">// shortest path, and the edges it used</span>
+<span class="c-kw">use</span> osmnxr_core::<span class="c-ty">Graph</span>;
+<span class="c-kw">use</span> osmnxr_core::routing::{csr_edge_order, shortest_path_route};
+
+<span class="c-kw">let</span> g = <span class="c-ty">Graph</span>::<span class="c-cmd">from_edges</span>(&amp;from, &amp;to, &amp;length, n_nodes);
+<span class="c-kw">let</span> (path, slots, cost) = <span class="c-cmd">shortest_path_route</span>(&amp;g, src, dst)
+    .<span class="c-cmd">expect</span>(<span class="c-str">"reachable"</span>);
+
+<span class="c-cmt">// CSR slots -&gt; positions in your own edge table</span>
+<span class="c-kw">let</span> order = <span class="c-cmd">csr_edge_order</span>(&amp;from, n_nodes);
+<span class="c-kw">let</span> edges: Vec&lt;usize&gt; = slots.<span class="c-cmd">iter</span>().<span class="c-cmd">map</span>(|&amp;s| order[s]).<span class="c-cmd">collect</span>();</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+<pre><code><span class="c-cmt">// centrality and street-grid order</span>
+<span class="c-kw">use</span> osmnxr_core::centrality::betweenness_centrality;
+<span class="c-kw">use</span> osmnxr_core::metrics::{bearing, orientation_entropy};
+
+<span class="c-kw">let</span> b = <span class="c-cmd">betweenness_centrality</span>(&amp;g, <span class="c-flag">true</span>);
+
+<span class="c-kw">let</span> bearings: Vec&lt;f64&gt; = edges.<span class="c-cmd">iter</span>()
+    .<span class="c-cmd">map</span>(|e| <span class="c-cmd">bearing</span>(e.lat1, e.lon1, e.lat2, e.lon2))
+    .<span class="c-cmd">collect</span>();
+<span class="c-kw">let</span> entropy = <span class="c-cmd">orientation_entropy</span>(&amp;bearings, <span class="c-flag">36</span>);
+
+<span class="c-cmt">// snap points to the nearest edge</span>
+<span class="c-kw">use</span> osmnxr_core::spatial::<span class="c-ty">SegmentIndex</span>;
+<span class="c-kw">let</span> index = <span class="c-ty">SegmentIndex</span>::<span class="c-cmd">build</span>(&amp;vx, &amp;vy, &amp;offsets);
+<span class="c-kw">let</span> hit = index.<span class="c-cmd">nearest</span>(px, py, tolerance);</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trust">
+    <div class="wrap">
+      <h2>Checked</h2>
+      <p class="sub">The R package that grew this code is its regression suite; the crate adds its own tests, and the heavier claims were measured.</p>
+      <div class="card scroll">
+        <table class="cmp">
+          <thead><tr><th>What</th><th>Against</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Pareto front of bicriteria paths</td><td>Brute-force enumeration of every simple path on random graphs</td><td>Identical fronts</td></tr>
+            <tr><td>Travelling-salesman heuristic</td><td>The R package <code>TSP</code> on the same cost matrices, 80 instances of 8 to 50 stops</td><td>54 wins, 26 ties, no losses; matches brute force where feasible</td></tr>
+            <tr><td>LARAC constrained shortest path</td><td>The exact front, eight scenarios on the Delhi road network</td><td>True optimum in all eight (gaps ≤ 0.77%)</td></tr>
+            <tr><td>Overpass filters, simplification, consolidation (in osmnxr)</td><td>OSMnx 2.1 tag for tag, live on a Recife bounding box</td><td>Network sizes ordered as expected: drive &lt; drive_service &lt; bike &lt; walk &lt; all_public &lt; all</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid f3" style="margin-top:18px">
+        <div class="card"><div class="ic">✅</div><h3>CI on every platform</h3><p>fmt · clippy <code>-D warnings</code> · tests and docs on Linux, macOS and Windows, on Rust 1.81, plus a WebAssembly build.</p></div>
+        <div class="card"><div class="ic">📄</div><h3>From the papers</h3><p>Dijkstra, Yen, Brandes, Martins' bicriteria label-setting, Jüttner et al.'s LARAC, and the double-bridge kick of Martin, Otto and Felten.</p></div>
+        <div class="card"><div class="ic">⚖️</div><h3>MIT, nothing attached</h3><p>One license, no dependencies, no supply chain. The design follows OSMnx by Geoff Boeing; the code is a reimplementation.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="family" class="alt">
+    <div class="wrap">
+      <h2>Family</h2>
+      <p class="sub">The crate is the source of every number; the packages built on it keep the I/O and the ergonomics of their language.</p>
+      <div class="grid f2">
+        <div class="card"><div class="ic">📦</div><h3>osmnxr (R)</h3><p>OSMnx for R, on CRAN: downloads from Overpass and Nominatim, builds <code>sf</code> graphs, simplifies, routes, draws isochrones and figure-ground maps. Vendors this crate and calls it through extendr. <a href="https://strategicprojects.github.io/osmnxr/">Website</a> · <a href="https://github.com/StrategicProjects/osmnxr">GitHub</a></p></div>
+        <div class="card"><div class="ic">🦀</div><h3>osmnxr-core (Rust)</h3><p>This crate. Use it from any Rust program, or wrap it for another language the way osmnxr does: pass edge lists, get indices back. <a href="https://crates.io/crates/osmnxr-core">crates.io</a> · <a href="api/osmnxr_core/">API reference</a></p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div><strong>osmnxr-core</strong> · MIT-licensed · André Leite · StrategicProjects</div>
+    <div class="foot-links">
+      <a href="https://github.com/StrategicProjects/osmnxr-core">Repository</a>
+      <a href="api/osmnxr_core/">API reference</a>
+      <a href="https://strategicprojects.github.io/osmnxr/">osmnxr for R</a>
+      <a href="https://github.com/StrategicProjects/osmnxr-core/blob/main/LICENSE-MIT">License</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" width="960" height="300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14">
+  <title>Edge lists of node indices go into a CSR graph; the algorithms run on it; the results come back as indices into the caller's own edges and nodes.</title>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c5cff"/>
+    </marker>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#29c7ac"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .box { fill: #16203f; stroke: #263457; stroke-width: 1.5; rx: 14; }
+    .core { fill: #121a33; stroke: url(#g1); stroke-width: 2; }
+    .t { fill: #e8edf7; font-weight: 700; }
+    .m { fill: #9fb0d0; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+    .k { fill: #29c7ac; }
+    .lab { fill: #7c5cff; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+    .arrow { stroke: #7c5cff; stroke-width: 2; fill: none; marker-end: url(#arr); }
+  </style>
+
+  <!-- Caller -->
+  <rect class="box" x="20" y="60" width="210" height="180" rx="14"/>
+  <text class="lab" x="36" y="84">THE CALLER (R, PYTHON, …)</text>
+  <text class="t" x="36" y="110">Edge lists</text>
+  <text class="mono m" x="36" y="134">from   = [0, 1, 2, …]</text>
+  <text class="mono m" x="36" y="154">to     = [1, 2, 3, …]</text>
+  <text class="mono m" x="36" y="174">weight = [1.0, 1.0, …]</text>
+  <text class="m" x="36" y="204">0-based node indices;</text>
+  <text class="m" x="36" y="222">geometry and ids stay home.</text>
+
+  <path class="arrow" d="M232,150 L292,150"/>
+
+  <!-- Core -->
+  <rect class="core" x="296" y="30" width="400" height="260" rx="16"/>
+  <text class="lab" x="316" y="56">OSMNXR-CORE</text>
+  <rect class="box" x="316" y="70" width="162" height="56" rx="10"/>
+  <text class="t" x="330" y="94">Graph (CSR)</text>
+  <text class="m" x="330" y="114" font-size="12">offsets · targets · weights</text>
+
+  <path class="arrow" d="M480,98 L500,98"/>
+
+  <rect class="box" x="502" y="70" width="174" height="200" rx="10"/>
+  <text class="t" x="516" y="94">Algorithms</text>
+  <text class="mono k" x="516" y="116">routing</text>
+  <text class="m" x="516" y="132" font-size="12">Dijkstra · Yen · matrices · TSP</text>
+  <text class="m" x="516" y="148" font-size="12">Pareto front · LARAC</text>
+  <text class="mono k" x="516" y="170">centrality</text>
+  <text class="m" x="516" y="186" font-size="12">betweenness · closeness</text>
+  <text class="mono k" x="516" y="208">metrics · simplify</text>
+  <text class="m" x="516" y="224" font-size="12">bearings · entropy · chains</text>
+  <text class="mono k" x="516" y="246">spatial</text>
+  <text class="m" x="516" y="262" font-size="12">grid-indexed snapping</text>
+
+  <text class="m" x="316" y="160" font-size="12">no I/O, no CRS,</text>
+  <text class="m" x="316" y="178" font-size="12">no dependencies,</text>
+  <text class="m" x="316" y="196" font-size="12">no unsafe.</text>
+
+  <path class="arrow" d="M698,150 L758,150"/>
+
+  <!-- Results -->
+  <rect class="box" x="762" y="60" width="178" height="180" rx="14"/>
+  <text class="lab" x="778" y="84">BACK AS INDICES</text>
+  <text class="t" x="778" y="110">Results</text>
+  <text class="mono m" x="778" y="134">path  = [0, 4, 8]</text>
+  <text class="mono m" x="778" y="154">edges = [7, 19]</text>
+  <text class="mono m" x="778" y="174">cost  = 240.0</text>
+  <text class="m" x="778" y="204">Index back into your</text>
+  <text class="m" x="778" y="222">own edges and nodes.</text>
+</svg>
