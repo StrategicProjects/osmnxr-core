@@ -92,13 +92,22 @@ Rust 1.81 or later. No dependencies, no features, no `unsafe`.
 
 ## Family
 
+- [OSMnx](https://osmnx.readthedocs.io/) (Python): the original, by
+  [Geoff Boeing](https://geoffboeing.com/), which downloads, models,
+  analyzes and visualizes street networks from OpenStreetMap. osmnxr follows
+  its API and its modelling choices; this crate reimplements the graph math
+  in Rust and shares no code with it.
+  [GitHub](https://github.com/gboeing/osmnx).
 - [osmnxr](https://github.com/StrategicProjects/osmnxr): the R package (CRAN),
   which vendors this crate and calls it through
   [extendr](https://extendr.github.io/).
 
 ## Acknowledgements
 
-The design follows [OSMnx](https://github.com/gboeing/osmnx) by Geoff Boeing.
+The design follows [OSMnx](https://osmnx.readthedocs.io/) by
+[Geoff Boeing](https://geoffboeing.com/) (Boeing, G. 2025. "Modeling and
+Analyzing Urban Networks and Amenities with OSMnx." *Geographical Analysis*,
+57(4): 567–577. doi:10.1111/gean.70009).
 The algorithms come from the literature: Dijkstra (1959), Yen (1971), Brandes
 (2001), Martins (1984) for the bicriteria front, Jüttner et al. (2001) for
 LARAC, and Martin, Otto and Felten (1991) for the double-bridge kick.
