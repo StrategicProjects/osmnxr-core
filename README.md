@@ -4,6 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/osmnxr-core.svg)](https://crates.io/crates/osmnxr-core)
 [![docs.rs](https://img.shields.io/docsrs/osmnxr-core)](https://docs.rs/osmnxr-core)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE-MIT)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23822955.svg)](https://doi.org/10.5281/zenodo.23822955)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
 
 Street-network graph algorithms for OpenStreetMap-style networks, with no
@@ -101,6 +102,12 @@ The design follows [OSMnx](https://github.com/gboeing/osmnx) by Geoff Boeing.
 The algorithms come from the literature: Dijkstra (1959), Yen (1971), Brandes
 (2001), Martins (1984) for the bicriteria front, Jüttner et al. (2001) for
 LARAC, and Martin, Otto and Felten (1991) for the double-bridge kick.
+
+## Citation
+
+See [CITATION.cff](CITATION.cff). Each release is archived on Zenodo; the
+concept DOI [10.5281/zenodo.23822955](https://doi.org/10.5281/zenodo.23822955)
+always resolves to the latest version.
 
 ## License
 
