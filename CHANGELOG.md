@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.1
+
+No code changes.
 
 - Credit: the crate is described as the compute core of osmnxr, the R port
   of OSMnx by Geoff Boeing. The OSMnx MIT notice ships in `NOTICE`, the
