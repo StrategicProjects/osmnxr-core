@@ -11,7 +11,7 @@ authors:
 repository-code: "https://github.com/StrategicProjects/osmnxr-core"
 url: "https://strategicprojects.github.io/osmnxr-core/"
 license: MIT
-doi: 10.5281/zenodo.23822956
+doi: 10.5281/zenodo.24208496
 version: 0.1.1
 references:
   - type: article
