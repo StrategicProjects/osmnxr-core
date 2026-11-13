@@ -9,9 +9,15 @@
 
 Street-network graph algorithms for OpenStreetMap-style networks, with no
 dependencies. This crate is the compute core of
-[osmnxr](https://strategicprojects.github.io/osmnxr/), the R package that
-brings [OSMnx](https://osmnx.readthedocs.io/) to R: the R layer downloads,
-models and draws; this crate does the graph math.
+[osmnxr](https://strategicprojects.github.io/osmnxr/), the R port of
+[OSMnx](https://osmnx.readthedocs.io/), the Python library by
+[Geoff Boeing](https://geoffboeing.com/): the R layer downloads, models and
+draws; this crate does the graph math. The street-network model it serves is
+OSMnx's. If you use it, please [cite OSMnx](#citation).
+
+> An independent project, not affiliated with, maintained by or endorsed by
+> the OSMnx project or its author. Written with the assistance of AI coding
+> tools.
 
 It knows nothing about OpenStreetMap, geometry or coordinate systems. A caller
 hands it edge lists of 0-based node indices with weights and gets back node
@@ -94,9 +100,9 @@ Rust 1.81 or later. No dependencies, no features, no `unsafe`.
 
 - [OSMnx](https://osmnx.readthedocs.io/) (Python): the original, by
   [Geoff Boeing](https://geoffboeing.com/), which downloads, models,
-  analyzes and visualizes street networks from OpenStreetMap. osmnxr follows
-  its API and its modelling choices; this crate reimplements the graph math
-  in Rust and shares no code with it.
+  analyzes and visualizes street networks from OpenStreetMap. osmnxr is a
+  port of it to R: it follows its API and its modelling choices, and this
+  crate is the Rust half of that port (the graph math, written for it).
   [GitHub](https://github.com/gboeing/osmnx).
 - [osmnxr](https://github.com/StrategicProjects/osmnxr): the R package (CRAN),
   which vendors this crate and calls it through
@@ -104,20 +110,28 @@ Rust 1.81 or later. No dependencies, no features, no `unsafe`.
 
 ## Acknowledgements
 
-The design follows [OSMnx](https://osmnx.readthedocs.io/) by
-[Geoff Boeing](https://geoffboeing.com/) (Boeing, G. 2025. "Modeling and
-Analyzing Urban Networks and Amenities with OSMnx." *Geographical Analysis*,
-57(4): 567–577. doi:10.1111/gean.70009).
-The algorithms come from the literature: Dijkstra (1959), Yen (1971), Brandes
+The street-network model (what simplification, intersection consolidation,
+bearings and orientation metrics mean) is that of
+[OSMnx](https://osmnx.readthedocs.io/) by
+[Geoff Boeing](https://geoffboeing.com/); the intellectual contribution of
+that design is his. The routing extensions (Pareto and constrained paths,
+the TSP heuristic) are not in OSMnx. The algorithms come from the literature: Dijkstra (1959), Yen (1971), Brandes
 (2001), Martins (1984) for the bicriteria front, Jüttner et al. (2001) for
 LARAC, and Martin, Otto and Felten (1991) for the double-bridge kick.
 
 ## Citation
 
-See [CITATION.cff](CITATION.cff). Each release is archived on Zenodo; the
+This crate is part of a port of OSMnx, so the work to cite is OSMnx:
+
+> Boeing, G. (2025). Modeling and Analyzing Urban Networks and Amenities with
+> OSMnx. *Geographical Analysis*, 57(4), 567–577.
+> doi:[10.1111/gean.70009](https://doi.org/10.1111/gean.70009)
+
+For the crate itself, see [CITATION.cff](CITATION.cff). Each release is archived on Zenodo; the
 concept DOI [10.5281/zenodo.23822955](https://doi.org/10.5281/zenodo.23822955)
 always resolves to the latest version.
 
 ## License
 
-MIT. See [LICENSE-MIT](LICENSE-MIT).
+MIT. See [LICENSE-MIT](LICENSE-MIT). OSMnx is MIT © 2016–2026 Geoff Boeing;
+its notice is reproduced in [NOTICE](NOTICE).

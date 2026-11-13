@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use osmnxr-core, please cite it using this metadata."
-title: "osmnxr-core: street-network graph algorithms behind the R package osmnxr"
+title: "osmnxr-core: street-network graph algorithms behind osmnxr, the R port of OSMnx"
 type: software
 authors:
   - family-names: Leite
@@ -13,3 +13,24 @@ url: "https://strategicprojects.github.io/osmnxr-core/"
 license: MIT
 doi: 10.5281/zenodo.23822956
 version: 0.1.0
+references:
+  - type: article
+    title: "Modeling and Analyzing Urban Networks and Amenities with OSMnx"
+    authors:
+      - family-names: Boeing
+        given-names: Geoff
+    journal: "Geographical Analysis"
+    year: 2025
+    volume: 57
+    issue: 4
+    start: 567
+    end: 577
+    doi: 10.1111/gean.70009
+    notes: "OSMnx, the Python library whose street-network model this crate follows. Please cite it."
+  - type: software
+    title: "OSMnx"
+    authors:
+      - family-names: Boeing
+        given-names: Geoff
+    repository-code: "https://github.com/gboeing/osmnx"
+    license: MIT

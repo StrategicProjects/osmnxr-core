@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Credit: the crate is described as the compute core of osmnxr, the R port
+  of OSMnx by Geoff Boeing. The OSMnx MIT notice ships in `NOTICE`, the
+  README and `CITATION.cff` ask users to cite Boeing (2025), and the docs
+  state the AI assistance and the absence of affiliation with OSMnx.
+
 ## 0.1.0
 
 First release. The crate is the Rust core that shipped inside the R package

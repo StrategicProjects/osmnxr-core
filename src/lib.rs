@@ -1,7 +1,12 @@
 //! Street-network graph algorithms for OpenStreetMap-style networks.
 //!
 //! `osmnxr-core` is the compute core of the R package
-//! [osmnxr](https://strategicprojects.github.io/osmnxr/) (OSMnx for R). It
+//! [osmnxr](https://strategicprojects.github.io/osmnxr/), a port to R of
+//! [OSMnx](https://osmnx.readthedocs.io/), the Python library by Geoff Boeing
+//! (Boeing, 2025, doi:10.1111/gean.70009). The street-network model this
+//! crate serves (simplification, intersection consolidation, bearings and
+//! orientation metrics) is OSMnx's; the crate is not affiliated with or
+//! endorsed by the OSMnx project. It
 //! holds the graph math and nothing else: no I/O, no geometry types, no
 //! coordinate reference systems. A caller hands it edge lists of 0-based node
 //! indices with weights, and gets back node paths, edge indices, distances
